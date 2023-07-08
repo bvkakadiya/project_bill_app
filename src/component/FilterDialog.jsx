@@ -2,35 +2,45 @@ import { useState } from "react";
 import {
   Button,
   Dialog,
-  InputLabel,
   Select,
   MenuItem,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  Input,
+  Box,
+  Card,
+  Paper,
+  Grid,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 import PropTypes from "prop-types";
 
-import * as XLSX from "xlsx";
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: "center",
+  color: theme.palette.text.secondary,
+}));
 
 const FilterDialog = ({
   open,
   onClose,
+  filters: initialFilters,
   onSubmit,
   columns,
   description1,
   description2,
 }) => {
-  const [filters, setFilters] = useState([]);
+  const [filters, setFilters] = useState(initialFilters ?? []);
 
   const handleAddFilter = () => {
     setFilters([
       ...filters,
       {
-        id:0,
+        id: 0,
         description1: "",
         description2: [],
         columnName: "",
@@ -47,7 +57,7 @@ const FilterDialog = ({
   const handleFilterChange = (index, field, value) => {
     setFilters(
       filters.map((filter, i) =>
-        i === index ? { ...filter, [field]: value, id:index } : filter
+        i === index ? { ...filter, [field]: value, id: index } : filter
       )
     );
   };
@@ -57,111 +67,125 @@ const FilterDialog = ({
     onClose();
   };
 
-  const handleImportFilters = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = e.target.result;
-      const workbook = XLSX.read(data, { type: "binary" });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const csvData = XLSX.utils.sheet_to_csv(worksheet);
-      const newFilters = csvData
-        .split("\n")
-        .filter((row) => row.trim() !== "")
-        .map((row) => {
-          const [name, description1, description2, columnName, value] =
-            row.split(",");
-          return {
-            name,
-            description1,
-            description2: description2.split(":::"),
-            columnName,
-            value,
-          };
-        });
-      setFilters(newFilters.slice(1));
-    };
-    reader.readAsBinaryString(file);
-  };
-
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Add Filters</DialogTitle>
       <DialogContent>
         {filters.map((filter, index) => (
-          <div key={index}>
-            <TextField
-              label="Filter Name"
-              value={filter.name}
-              onChange={(event) =>
-                handleFilterChange(index, "name", event.target.value)
-              }
-            />
-
-            <InputLabel>Select Descption 1</InputLabel>
-            <Select
-              value={filter.description1}
-              onChange={(event) =>
-                handleFilterChange(index, "description1", event.target.value)
-              }
-            >
-              {description1.map((value, index) => (
-                <MenuItem key={index} value={value}>
-                  {value}
-                </MenuItem>
-              ))}
-            </Select>
-            <InputLabel>Select a Description 2</InputLabel>
-            {filter.description1 && (
-              <Select
-                multiple
-                value={filter.description2}
-                onChange={(event) =>
-                  handleFilterChange(index, "description2", event.target.value)
-                }
-                renderValue={(selected) => selected.join(", ")}
-              >
-                {description2[filter.description1] && [...description2[filter?.description1]].map((value, index) => (
-                  <MenuItem key={index} value={value}>
-                    {value}
-                  </MenuItem>
-                ))}
-              </Select>
-            )}
-            <Select
-              value={filter.columnName}
-              onChange={(event) =>
-                handleFilterChange(index, "columnName", event.target.value)
-              }
-            >
-              {columns.map((value, index) => (
-                <MenuItem key={index} value={value}>
-                  {value}
-                </MenuItem>
-              ))}
-            </Select>
-            <TextField
-              label="Value"
-              value={filter.value}
-              onChange={(event) =>
-                handleFilterChange(index, "value", event.target.value)
-              }
-            />
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => handleRemoveFilter(index)}
-            >
-              Remove
-            </Button>
-          </div>
+          <Card key={index}>
+            <Box sx={{ flexGrow: 1 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={6} md={10}>
+                  <Item>
+                    <TextField
+                      label="Filter Name"
+                      value={filter.name}
+                      sx={{ p: 1 }}
+                      onChange={(event) =>
+                        handleFilterChange(index, "name", event.target.value)
+                      }
+                    />
+                  </Item>
+                </Grid>
+                <Grid item xs={6} md={6}>
+                  <Item>
+                    <Select
+                      value={filter.description1}
+                      label="Description 1"
+                      onChange={(event) =>
+                        handleFilterChange(
+                          index,
+                          "description1",
+                          event.target.value
+                        )
+                      }
+                    >
+                      {description1.map((value, index) => (
+                        <MenuItem key={index} value={value}>
+                          {value}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </Item>
+                </Grid>
+                <Grid item xs={6} md={6}>
+                  <Item>
+                    {filter.description1 && (
+                      <Select
+                        multiple
+                        value={filter.description2}
+                        label="Description 2"
+                        onChange={(event) =>
+                          handleFilterChange(
+                            index,
+                            "description2",
+                            event.target.value
+                          )
+                        }
+                        renderValue={(selected) => selected.join(", ")}
+                      >
+                        {description2[filter.description1] &&
+                          [...description2[filter?.description1]].map(
+                            (value, index) => (
+                              <MenuItem key={index} value={value}>
+                                {value}
+                              </MenuItem>
+                            )
+                          )}
+                      </Select>
+                    )}
+                  </Item>
+                </Grid>
+                <Grid item xs={6} md={6}>
+                  <Item>
+                    <Select
+                      value={filter.columnName}
+                      onChange={(event) =>
+                        handleFilterChange(
+                          index,
+                          "columnName",
+                          event.target.value
+                        )
+                      }
+                    >
+                      {columns.map((value, index) => (
+                        <MenuItem key={index} value={value}>
+                          {value}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </Item>
+                </Grid>
+                <Grid item xs={6} md={6}>
+                  <Item>
+                    <TextField
+                      label="Value"
+                      value={filter.value}
+                      onChange={(event) =>
+                        handleFilterChange(index, "value", event.target.value)
+                      }
+                    />
+                  </Item>
+                </Grid>
+                <Grid item xs={6} md={6}>
+                  <Item>
+                    {" "}
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => handleRemoveFilter(index)}
+                    >
+                      Remove
+                    </Button>
+                  </Item>
+                </Grid>
+              </Grid>
+            </Box>
+          </Card>
         ))}
         <Button variant="outlined" onClick={handleAddFilter}>
           Add Filter
         </Button>
-        <Input type="file" accept=".xls,.xlsx" onChange={handleImportFilters}>
-          Import Filters
-        </Input>
       </DialogContent>
       <DialogActions>
         <Button variant="outlined" onClick={onClose}>
@@ -182,5 +206,6 @@ FilterDialog.propTypes = {
   description2: PropTypes.object.isRequired,
   onSubmit: PropTypes.func.isRequired,
   columns: PropTypes.array.isRequired,
+  filters: PropTypes.array,
 };
 export default FilterDialog;
