@@ -45,7 +45,7 @@ function TabsWithTable({ groupByData, columns: cols }) {
       </Tabs>
       {groupData.map((group, index) => (
         <Box key={index} hidden={value !== index}>
-          <Typography sx={{ p: 2, m: 2 }}>
+          <Typography sx={{ p: 0, m: 1 }}>
             Total Sum is : {group.data?.sum}
           </Typography>
           <Card>

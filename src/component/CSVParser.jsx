@@ -169,6 +169,7 @@ function CsvParser() {
         open={filterDialogOpen}
         onClose={() => setFilterDialogOpen(false)}
         onSubmit={setFilters}
+        setFilters={setFilters}
         filters={filters}
       />
     </div>

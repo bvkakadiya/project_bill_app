@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Button,
   Dialog,
@@ -20,22 +19,21 @@ import PropTypes from "prop-types";
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
   ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
+  textAlign: "left",
+  minWidth: "3rem",
   color: theme.palette.text.secondary,
 }));
 
 const FilterDialog = ({
   open,
   onClose,
-  filters: initialFilters,
+  filters,
+  setFilters,
   onSubmit,
   columns,
   description1,
   description2,
 }) => {
-  const [filters, setFilters] = useState(initialFilters ?? []);
-
   const handleAddFilter = () => {
     setFilters([
       ...filters,
@@ -46,6 +44,8 @@ const FilterDialog = ({
         columnName: "",
         name: "",
         value: "",
+        startdate: "",
+        enddate: "",
       },
     ]);
   };
@@ -75,12 +75,12 @@ const FilterDialog = ({
           <Card key={index}>
             <Box sx={{ flexGrow: 1 }}>
               <Grid container spacing={2}>
-                <Grid item xs={6} md={10}>
+                <Grid item xs={6} md={12}>
                   <Item>
                     <TextField
+                      sx={{ p: 0 }}
                       label="Filter Name"
                       value={filter.name}
-                      sx={{ p: 1 }}
                       onChange={(event) =>
                         handleFilterChange(index, "name", event.target.value)
                       }
@@ -90,6 +90,7 @@ const FilterDialog = ({
                 <Grid item xs={6} md={6}>
                   <Item>
                     <Select
+                      sx={{ p: 0 }}
                       value={filter.description1}
                       label="Description 1"
                       onChange={(event) =>
@@ -112,6 +113,7 @@ const FilterDialog = ({
                   <Item>
                     {filter.description1 && (
                       <Select
+                        sx={{ p: 0 }}
                         multiple
                         value={filter.description2}
                         label="Description 2"
@@ -139,6 +141,7 @@ const FilterDialog = ({
                 <Grid item xs={6} md={6}>
                   <Item>
                     <Select
+                      sx={{ p: 0 }}
                       value={filter.columnName}
                       onChange={(event) =>
                         handleFilterChange(
@@ -159,6 +162,10 @@ const FilterDialog = ({
                 <Grid item xs={6} md={6}>
                   <Item>
                     <TextField
+                      sx={{
+                        p: 0,
+                        minWidth: "3rem",
+                      }}
                       label="Value"
                       value={filter.value}
                       onChange={(event) =>
@@ -167,17 +174,21 @@ const FilterDialog = ({
                     />
                   </Item>
                 </Grid>
-                <Grid item xs={6} md={6}>
-                  <Item>
-                    {" "}
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => handleRemoveFilter(index)}
-                    >
-                      Remove
-                    </Button>
-                  </Item>
+                <Grid
+                  item
+                  xs={6}
+                  md={12}
+                  sx={{
+                    mb: 1,
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleRemoveFilter(index)}
+                  >
+                    Remove
+                  </Button>
                 </Grid>
               </Grid>
             </Box>
@@ -207,5 +218,6 @@ FilterDialog.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   columns: PropTypes.array.isRequired,
   filters: PropTypes.array,
+  setFilters: PropTypes.func,
 };
 export default FilterDialog;
