@@ -135,7 +135,7 @@ const FilterDialog = ({
               label="value"
               value={filter.operator}
               onChange={(event) =>
-                handleFilterChange(index, "operator", event.target.value)
+                handleFilterChange(index, "value", event.target.value)
               }
             />
             <Button
