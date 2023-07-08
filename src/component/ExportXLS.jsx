@@ -2,12 +2,12 @@ import PropTypes from "prop-types";
 import * as XLSX from "xlsx";
 import FileSaver from "file-saver";
 import { useMemo } from "react";
-import { Button } from "@mui/base";
+import { Button } from "@mui/material";
 
 const ExportXLS = ({ filters, csvData }) => {
   const exportXLS = () => {
     const formatData = Object.entries(groupByData).map(([key, value]) => {
-      return { name: key, amount: value.sum, };
+      return { name: key, amount: value.sum };
     });
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(formatData);
@@ -26,13 +26,22 @@ const ExportXLS = ({ filters, csvData }) => {
   };
 
   const exportFilters = () => {
+    const mappedFilters = filters.map(
+      ({ description1, description2, columnName, name, value }) => ({
+        name,
+        description1,
+        description2: description2.join(":::"),
+        columnName,
+        value,
+      })
+    );
     const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(filters);
+    const worksheet = XLSX.utils.json_to_sheet(mappedFilters);
     const headerStyle = { font: { bold: true } };
 
     XLSX.utils.sheet_add_aoa(
       worksheet,
-      [["description1", "description2", "columnName", "name", "value"]],
+      [["name","description1", "description2", "columnName", "value"]],
       {
         styles: [
           headerStyle,

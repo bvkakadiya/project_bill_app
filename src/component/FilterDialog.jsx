@@ -14,7 +14,7 @@ import {
 
 import PropTypes from "prop-types";
 
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 
 const FilterDialog = ({
   open,
@@ -30,8 +30,9 @@ const FilterDialog = ({
     setFilters([
       ...filters,
       {
+        id:0,
         description1: "",
-        description2: "",
+        description2: [],
         columnName: "",
         name: "",
         value: "",
@@ -46,7 +47,7 @@ const FilterDialog = ({
   const handleFilterChange = (index, field, value) => {
     setFilters(
       filters.map((filter, i) =>
-        i === index ? { ...filter, [field]: value } : filter
+        i === index ? { ...filter, [field]: value, id:index } : filter
       )
     );
   };
@@ -61,15 +62,22 @@ const FilterDialog = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target.result;
-      const workbook = XLSX.read(data, { type: 'binary' });
+      const workbook = XLSX.read(data, { type: "binary" });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const csvData = XLSX.utils.sheet_to_csv(worksheet);
       const newFilters = csvData
-        .split('\n')
-        .filter((row) => row.trim() !== '')
+        .split("\n")
+        .filter((row) => row.trim() !== "")
         .map((row) => {
-          const [description1, description2, columnName, name, value] = row.split(',');
-          return { description1, description2, columnName, name, value };
+          const [name, description1, description2, columnName, value] =
+            row.split(",");
+          return {
+            name,
+            description1,
+            description2: description2.split(":::"),
+            columnName,
+            value,
+          };
         });
       setFilters(newFilters.slice(1));
     };
@@ -78,7 +86,6 @@ const FilterDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose}>
-        
       <DialogTitle>Add Filters</DialogTitle>
       <DialogContent>
         {filters.map((filter, index) => (
@@ -107,12 +114,14 @@ const FilterDialog = ({
             <InputLabel>Select a Description 2</InputLabel>
             {filter.description1 && (
               <Select
+                multiple
                 value={filter.description2}
                 onChange={(event) =>
                   handleFilterChange(index, "description2", event.target.value)
                 }
+                renderValue={(selected) => selected.join(", ")}
               >
-                {[...description2[filter.description1]].map((value, index) => (
+                {description2[filter.description1] && [...description2[filter?.description1]].map((value, index) => (
                   <MenuItem key={index} value={value}>
                     {value}
                   </MenuItem>
@@ -132,8 +141,8 @@ const FilterDialog = ({
               ))}
             </Select>
             <TextField
-              label="value"
-              value={filter.operator}
+              label="Value"
+              value={filter.value}
               onChange={(event) =>
                 handleFilterChange(index, "value", event.target.value)
               }
@@ -150,8 +159,8 @@ const FilterDialog = ({
         <Button variant="outlined" onClick={handleAddFilter}>
           Add Filter
         </Button>
-        <Input type="file" accept=".xls,.xlsx" onChange={handleImportFilters} >
-            Import Filters
+        <Input type="file" accept=".xls,.xlsx" onChange={handleImportFilters}>
+          Import Filters
         </Input>
       </DialogContent>
       <DialogActions>
